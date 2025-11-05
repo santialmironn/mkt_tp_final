@@ -1,9 +1,11 @@
-# main.py
+import sys
 from pathlib import Path
-from etl.extract.extract import extract_raw_data
-from etl.load.load import load_data_to_dw
 
-# importación de transformaciones
+ROOT = Path(__file__).resolve().parent
+sys.path.append(str(ROOT))
+
+from etl.extract.extract import extract_raw_data
+
 from etl.transform.build_dim_channel import build_dim_channel
 from etl.transform.build_dim_customer import build_dim_customer
 from etl.transform.build_dim_product import build_dim_product
@@ -18,45 +20,52 @@ from etl.transform.build_fact_shipment import build_fact_shipment
 from etl.transform.build_fact_web_session import build_fact_web_session
 from etl.transform.build_fact_nps_response import build_fact_nps_response
 
-RAW = Path("raw")
-DW  = Path("dw")
+DW = ROOT / "dw"
+
 
 def main():
-    print("\n=== INICIO PIPELINE ETL ===\n")
+    print("\n=== 🚀 INICIO PIPELINE ETL ===\n")
+
+    DW.mkdir(exist_ok=True)
 
     print("📥 Extrayendo datos desde 'raw/'...")
-    data = extract_raw_data(RAW)
+    extract_raw_data("raw")  
 
-    print("\nCreando dimensiones...")
-    dim_functions = [
-        build_dim_channel,
-        build_dim_customer,
-        build_dim_product,
-        build_dim_address,
-        build_dim_store,
-        build_dim_calendar
+    print("\n🧱 Construyendo dimensiones...")
+    dim_funcs = [
+        ("dim_channel", build_dim_channel),
+        ("dim_customer", build_dim_customer),
+        ("dim_product", build_dim_product),
+        ("dim_address", build_dim_address),
+        ("dim_store", build_dim_store),
+        ("dim_calendar", build_dim_calendar),
     ]
-    for func in dim_functions:
-        df = func()
-        print(f"✅ {func.__name__} completada ({len(df)} filas)")
 
-    print("\nCreando tablas de hechos...")
-    fact_functions = [
-        build_fact_sales_order,
-        build_fact_sales_item,
-        build_fact_payment,
-        build_fact_shipment,
-        build_fact_web_session,
-        build_fact_nps_response
+    for name, func in dim_funcs:
+        df = func()           
+        out_path = DW / f"{name}.csv"
+        if not out_path.exists():
+            df.to_csv(out_path, index=False)
+        print(f"✅ {name} ({len(df)} filas)")
+
+    print("\n📊 Construyendo tablas de hechos...")
+    fact_funcs = [
+        ("fact_sales_order",   build_fact_sales_order),
+        ("fact_sales_item",    build_fact_sales_item),
+        ("fact_payment",       build_fact_payment),
+        ("fact_shipment",      build_fact_shipment),
+        ("fact_web_session",   build_fact_web_session),
+        ("fact_nps_response",  build_fact_nps_response),
     ]
-    for func in fact_functions:
-        df = func()
-        print(f"✅ {func.__name__} completada ({len(df)} filas)")
 
-    print("\n💾 Verificando carga en 'dw/'...")
-    load_data_to_dw({}, DW)
+    for name, func in fact_funcs:
+        df = func() 
+        out_path = DW / f"{name}.csv"
+        df.to_csv(out_path, index=False)
+        print(f"✅ {name} ({len(df)} filas)")
 
     print("\n=== ✅ PIPELINE COMPLETADA ===\n")
+
 
 if __name__ == "__main__":
     main()
