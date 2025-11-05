@@ -1,4 +1,4 @@
-nps_id,responded_date_id,customer_id,channel_id,score,comment,responded_at_time
+nps_id,responded_date_id,customer_sk,channel_sk,score,comment,responded_at_time
 13000001150,20240109,209,2,9,Muy conforme con la calidad,04:38:02
 13000001704,20240109,1042,2,4,Podría mejorar el empaque,16:42:49
 13000002029,20240110,308,2,8,Tardó un poco más de lo esperado,00:19:18

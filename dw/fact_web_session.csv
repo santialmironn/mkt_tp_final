@@ -1,4 +1,4 @@
-session_id,started_date_id,ended_date_id,customer_id,source,device,started_at_time,ended_at_time
+session_id,started_date_id,ended_date_id,customer_sk,source,device,started_at_time,ended_at_time
 11000000088,20240101,20240101,927.0,ads,tablet,00:43:15,01:16:15
 11000000533,20240101,20240101,520.0,direct,desktop,18:05:14,18:38:14
 11000001012,20240101,20240101,966.0,referral,desktop,19:49:56,20:30:56

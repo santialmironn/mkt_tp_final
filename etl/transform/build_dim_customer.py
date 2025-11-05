@@ -2,10 +2,13 @@ import pandas as pd
 from pathlib import Path
 
 def build_dim_customer(raw_dir: str = "raw"):
-    """Construye la dimensión de clientes."""
+    """Construye la dimensión de clientes con surrogate key."""
     df = pd.read_csv(Path(raw_dir) / "customer.csv")
     df = df[["customer_id", "email", "first_name", "last_name", "phone", "status", "created_at"]]
-    df = df.drop_duplicates()
+    df = df.drop_duplicates().reset_index(drop=True)
+
+    df.insert(0, "customer_sk", range(1, len(df) + 1))
+
     return df
 
 if __name__ == "__main__":
