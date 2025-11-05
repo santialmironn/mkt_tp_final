@@ -42,11 +42,11 @@ def main():
     ]
 
     for name, func in dim_funcs:
-        df = func()           
+        df = func()
         out_path = DW / f"{name}.csv"
-        if not out_path.exists():
-            df.to_csv(out_path, index=False)
-        print(f"✅ {name} ({len(df)} filas)")
+        df.to_csv(out_path, index=False)  # siempre actualiza
+        print(f"✅ {name} actualizado ({len(df)} filas)")
+
 
     print("\n📊 Construyendo tablas de hechos...")
     fact_funcs = [
