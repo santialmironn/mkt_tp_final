@@ -35,4 +35,4 @@ if __name__ == "__main__":
     DW.mkdir(exist_ok=True)
     out = build_fact_nps_response()
     out.to_csv(DW / "fact_nps_response.csv", index=False)
-    print("✅ fact_nps_response.csv creado en dw/ (solo con SKs)")
+    print("✅ fact_nps_response.csv creado en dw/")
