@@ -1,6 +1,31 @@
 # Trabajo Práctico Final — Introducción al Marketing Online y los Negocios Digitales
 
-Repositorio del trabajo práctico final de la materia.
+### 💵 fact_sales_order
+![fact_sales_order](assets/fact_sales_order.png)
 
-**Consigna y documento principal:** [Trabajo Práctico Final](https://docs.google.com/document/d/15RNP3FVqLjO4jzh80AAkK6mUR5DOLqPxLjQxqvdzrYg/edit?usp=sharing)
-**Diagrama Entidad Relación:** [DER](./assets/DER.png)
+---
+
+### 📦 fact_sales_item
+![fact_sales_item](assets/fact_sales_item.png)
+
+---
+
+### 💳 fact_payment
+![fact_payment](assets/fact_payment.png)
+
+---
+
+### 🚚 fact_shipment
+![fact_shipment](assets/fact_shipment.png)
+
+---
+
+### 🌐 fact_web_session
+![fact_web_session](assets/fact_web_session.png)
+
+---
+
+### 📈 fact_nps_response
+![fact_nps_response](assets/fact_nps_response.png)
+
+
