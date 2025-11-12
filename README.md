@@ -1,5 +1,8 @@
 # Proyecto EcoBottle - Diseño e Implementación de un Data Warehouse Comercial
 
+**Autor:** Santino Almirón Nanni
+
+---
 
 ## 1. Introducción y Objetivos
 El presente proyecto tiene como finalidad **diseñar e implementar un mini ecosistema de datos comercial**, aplicando un proceso **ETL completo (Extracción, Transformación y Carga)** que permita la creación de un **modelo dimensional (esquema estrella)** para análisis y reporting.
@@ -9,8 +12,32 @@ El caso de negocio corresponde a **EcoBottle**, una empresa dedicada a la venta 
 El propósito es centralizar la información de distintas fuentes, **desnormalizar las tablas operativas** y construir un **Data Warehouse (DW)** optimizado para consultas analíticas.
 
 ---
+## 2. Arquitectura del Proyecto
 
-## 2. Flujo de Datos (ETL)
+El proyecto sigue una arquitectura ETL clásica, organizada de la siguiente manera:
+
+**`raw/`**  
+   Contiene los 13 archivos `.csv` fuente que simulan la base de datos transaccional (OLTP) de la empresa.  
+   Estos archivos son la entrada principal del proceso ETL.
+
+**`etl/`**  
+   Incluye toda la lógica del proceso ETL, separada en módulos específicos:
+   - **`etl/extract/`**: Scripts para leer los datos desde `raw/` y cargarlos en dataframes.
+   - **`etl/transform/`**: Scripts para limpiar, estandarizar, desnormalizar y construir cada tabla de **Dimensión** y **Hechos** según el modelo estrella.
+   - **`etl/load/`**: Scripts para guardar los dataframes transformados en el directorio `dw/`.
+
+**`dw/`**  
+   Es el **Data Warehouse** resultante del proceso ETL.  
+   Los archivos aquí generados están listos para ser consumidos por herramientas de BI:
+   - Tablas de **Dimensiones** (ej. `dim_product.csv`, `dim_customer.csv`, `dim_channel.csv`, etc.).
+   - Tablas de **Hechos** (ej. `fact_sales_order.csv`, `fact_sales_item.csv`, `fact_payment.csv`, etc.).
+
+**`main.py`**  
+   Script orquestador que ejecuta las fases de **extracción**, **transformación** y **carga** en el orden correcto, generando automáticamente todas las tablas del Data Warehouse dentro del directorio `dw/`.
+
+--- 
+
+## 3. Flujo de Datos (ETL)
 El proyecto implementa un proceso ETL compuesto por tres fases principales:
 
 1. **Extracción (Extract):**  
@@ -21,14 +48,14 @@ El proyecto implementa un proceso ETL compuesto por tres fases principales:
    - **Limpieza de datos:** estandarización de formatos de fecha, eliminación de duplicados y corrección de valores nulos.
    - **Desnormalización:** combinación de tablas normalizadas en estructuras planas que representan entidades de negocio.
    - **Creación de Dimensiones (Dims):** se generan las tablas maestras (`dim_product`, `dim_customer`, `dim_channel`, etc.) asignando una **clave sustituta (SK)**.
-   - **Creación de Hechos (Facts):** se construyen las tablas de hechos (`fact_order`, `fact_payment`, etc.) vinculando las dimensiones mediante sus claves SK.
+   - **Creación de Hechos (Facts):** se construyen las tablas de hechos (`fact_sales_order`, `fact_payment`, etc.) vinculando las dimensiones mediante sus claves SK.
 
 3. **Carga (Load):**  
    Los DataFrames finales del proceso ETL se exportan como archivos `.csv` dentro del directorio `dw/`, listos para ser utilizados en herramientas de BI.
 
 ---
 
-## 3. ⚙️ Instrucciones de Ejecución
+## 4. ⚙️ Instrucciones de Ejecución
 
 Se deben seguir estos pasos para replicar el proceso ETL y generar los archivos finales:
 
@@ -58,7 +85,7 @@ Se deben seguir estos pasos para replicar el proceso ETL y generar los archivos 
    El archivo `main.py` actúa como **orquestador del pipeline ETL**, ejecutando en orden las fases de extracción, transformación y carga, y generando las tablas del Data Warehouse en el directorio `dw/`.
 ---
 
-## 4. Modelo de Datos (Esquema Estrella)
+## 5. Modelo de Datos (Esquema Estrella)
 El modelo dimensional está conformado por **seis esquemas estrella**, cada uno asociado a un proceso clave del negocio.
 
 ###  Fact_Sales_Order  
@@ -93,13 +120,26 @@ El modelo dimensional está conformado por **seis esquemas estrella**, cada uno 
 
 ---
 
-## 5. Diccionario de Datos
+## 6. Dashboards en Power BI
+
+### 📊 Reporte Comercial
+![Dashboard Comercial](assets/dashboard1.png)
+
+### 📈 Análisis por Canal
+![Dashboard por Canal](assets/dashboard2.png)
+
+🔗 **Acceso a los Dashboards Online:**  
+👉 [Haz clic aquí para ver los dashboards en Power BI](https://app.powerbi.com/view?r=eyJrIjoiYWE2YjhmZTMtNWQ1NC00NzU3LTlhODMtM2JmNWNhMjNiMmYwIiwidCI6IjNlMDUxM2Q2LTY4ZmEtNDE2ZS04ZGUxLTZjNWNkYzMxOWZmYSIsImMiOjR9)
+
+---
+
+## 7. Diccionario de Datos
 El siguiente diccionario de datos documenta las tablas que conforman el modelo dimensional del proyecto **EcoBottle**.  
 Incluye la definición de campos, tipos de datos y claves, facilitando la comprensión y el mantenimiento del Data Warehouse.
 
 ---
 
-### 5.1 Dimensiones
+### 7.1 Dimensiones
 
 #### `dim_product`
 
@@ -192,19 +232,19 @@ Incluye la definición de campos, tipos de datos y claves, facilitando la compre
 
 ---
 
-### 5.2 Hechos
+### 7.2 Hechos
 
 #### `fact_sales_order`
 
 | Campo                 | Tipo de dato  | Descripción                                                          |
 | :-------------------- | :------------ | :------------------------------------------------------------------- |
 | `order_id`            | BIGINT        | Identificador único del pedido (PK del hecho).                       |
-| `date_id`             | INT           | Clave de fecha (FK → `dim_calendar.date_id`).                        |
-| `customer_sk`         | INT           | Cliente asociado (FK → `dim_customer.customer_sk`).                  |
-| `channel_sk`          | INT           | Canal de venta (FK → `dim_channel.channel_sk`).                      |
-| `store_sk`            | INT           | Tienda física (FK → `dim_store.store_sk`). Puede ser NULL en online. |
-| `billing_address_sk`  | INT           | Dirección de facturación (FK → `dim_address.address_sk`).            |
-| `shipping_address_sk` | INT           | Dirección de envío (FK → `dim_address.address_sk`).                  |
+| `date_id`             | INT           | Clave de fecha (FK → `dim_calendar`).                        |
+| `customer_sk`         | INT           | Cliente asociado (FK → `dim_customer`).                  |
+| `channel_sk`          | INT           | Canal de venta (FK → `dim_channel`).                      |
+| `store_sk`            | INT           | Tienda física (FK → `dim_store`). Puede ser NULL en online. |
+| `billing_address_sk`  | INT           | Dirección de facturación (FK → `dim_address`).            |
+| `shipping_address_sk` | INT           | Dirección de envío (FK → `dim_address`).                  |
 | `status`              | VARCHAR(20)   | Estado del pedido (`CREATED`, `PAID`, `CANCELLED`, etc.).            |
 | `currency_code`       | CHAR(3)       | Código de moneda (`ARS`).                                            |
 | `subtotal`            | DECIMAL(12,2) | Monto subtotal de la orden.                                          |
@@ -219,11 +259,11 @@ Incluye la definición de campos, tipos de datos y claves, facilitando la compre
 | Campo             | Tipo de dato  | Descripción                                                |
 | :---------------- | :------------ | :--------------------------------------------------------- |
 | `order_item_id`   | BIGINT        | Identificador de línea de pedido (PK).                     |
-| `date_id`         | INT           | Fecha de la venta (FK → `dim_calendar.date_id`).           |
-| `product_sk`      | INT           | Producto vendido (FK → `dim_product.product_sk`).          |
-| `customer_sk`     | INT           | Cliente (FK → `dim_customer.customer_sk`).                 |
-| `channel_sk`      | INT           | Canal (FK → `dim_channel.channel_sk`).                     |
-| `store_sk`        | INT           | Tienda (FK → `dim_store.store_sk`).                        |
+| `date_id`         | INT           | Fecha de la venta (FK → `dim_calendar`).           |
+| `product_sk`      | INT           | Producto vendido (FK → `dim_product`).          |
+| `customer_sk`     | INT           | Cliente (FK → `dim_customer`).                 |
+| `channel_sk`      | INT           | Canal (FK → `dim_channel`).                     |
+| `store_sk`        | INT           | Tienda (FK → `dim_store`).                        |
 | `quantity`        | INT           | Cantidad de unidades vendidas.                             |
 | `unit_price`      | DECIMAL(12,2) | Precio unitario al momento de la venta.                    |
 | `discount_amount` | DECIMAL(12,2) | Descuento aplicado a la línea.                             |
@@ -236,11 +276,11 @@ Incluye la definición de campos, tipos de datos y claves, facilitando la compre
 | Campo                | Tipo de dato  | Descripción                                                    |
 | :------------------- | :------------ | :------------------------------------------------------------- |
 | `payment_id`         | BIGINT        | Identificador único del pago (PK).                             |
-| `paid_date_id`       | INT           | Fecha de pago (FK → `dim_calendar.date_id`).                   |
-| `customer_sk`        | INT           | Cliente que realiza el pago (FK → `dim_customer.customer_sk`). |
-| `channel_sk`         | INT           | Canal asociado al pedido (FK → `dim_channel.channel_sk`).      |
-| `store_sk`           | INT           | Tienda física (FK → `dim_store.store_sk`). Puede ser NULL.     |
-| `address_sk`      | INT           | Dirección asociada al pago (FK → `dim_address.address_sk`).    |
+| `paid_date_id`       | INT           | Fecha de pago (FK → `dim_calendar`).                   |
+| `customer_sk`        | INT           | Cliente que realiza el pago (FK → `dim_customer`). |
+| `channel_sk`         | INT           | Canal asociado al pedido (FK → `dim_channel`).      |
+| `store_sk`           | INT           | Tienda física (FK → `dim_store`). Puede ser NULL.     |
+| `address_sk`      | INT           | Dirección asociada al pago (FK → `dim_address`).    |
 | `amount`             | DECIMAL(12,2) | Importe abonado.                                               |
 | `method`             | VARCHAR(20)   | Método de pago (`CARD`, `CASH`, `TRANSFER`, `GATEWAY`, etc.).  |
 | `status`             | VARCHAR(20)   | Estado del pago (`PENDING`, `PAID`, `FAILED`, etc.).           |
@@ -273,9 +313,9 @@ Incluye la definición de campos, tipos de datos y claves, facilitando la compre
 | Campo             | Tipo de dato | Descripción                                                                                     |
 | :---------------- | :----------- | :---------------------------------------------------------------------------------------------- |
 | `session_id`      | BIGINT       | Identificador único de sesión (PK).                                                             |
-| `started_date_id` | INT          | Fecha de inicio (FK → `dim_calendar.date_id`).                                                  |
-| `ended_date_id`   | INT          | Fecha de fin (FK → `dim_calendar.date_id`).                                                     |
-| `customer_sk`     | INT          | Cliente identificado (FK → `dim_customer.customer_sk`). Puede ser NULL si la sesión es anónima. |
+| `started_date_id` | INT          | Fecha de inicio (FK → `dim_calendar`).                                                  |
+| `ended_date_id`   | INT          | Fecha de fin (FK → `dim_calendar`).                                                     |
+| `customer_sk`     | INT          | Cliente identificado (FK → `dim_customer`). Puede ser NULL si la sesión es anónima. |
 | `source`          | VARCHAR(50)  | Fuente de tráfico (`ads`, `direct`, `referral`, etc.).                                          |
 | `device`          | VARCHAR(30)  | Dispositivo (`desktop`, `mobile`, `tablet`).                                                    |
 | `started_at_time` | TIME         | Hora de inicio de la sesión.                                                                    |
@@ -288,9 +328,79 @@ Incluye la definición de campos, tipos de datos y claves, facilitando la compre
 | Campo               | Tipo de dato | Descripción                                                             |
 | :------------------ | :----------- | :---------------------------------------------------------------------- |
 | `nps_id`            | BIGINT       | Identificador único de la respuesta (PK).                               |
-| `responded_date_id` | INT          | Fecha de respuesta (FK → `dim_calendar.date_id`).                       |
-| `customer_sk`       | INT          | Cliente que responde (FK → `dim_customer.customer_sk`). Puede ser NULL. |
-| `channel_sk`        | INT          | Canal en el que se tomó la encuesta (FK → `dim_channel.channel_sk`).    |
+| `responded_date_id` | INT          | Fecha de respuesta (FK → `dim_calendar`).                       |
+| `customer_sk`       | INT          | Cliente que responde (FK → `dim_customer`). Puede ser NULL. |
+| `channel_sk`        | INT          | Canal en el que se tomó la encuesta (FK → `dim_channel`).    |
 | `score`             | SMALLINT     | Puntaje NPS asignado (0 a 10).                                          |
 | `comment`           | TEXT         | Comentario abierto del cliente (opcional).                              |
 | `responded_at_time` | TIME         | Hora en que se registró la respuesta.                                   |
+
+---
+
+## 8. Supuestos y Decisiones de Modelado
+
+Durante el desarrollo del proyecto se tomaron los siguientes supuestos y decisiones de diseño:
+
+1. **Uso de claves sustitutas (SK) en todas las dimensiones**  
+   Cada dimensión utiliza una clave sustituta (`*_sk`) como PK en el DW, desconectando el modelo analítico de los IDs de los sistemas transaccionales.  
+   Las claves de negocio originales (`*_id`) se mantienen para trazabilidad y procesos de carga.
+
+2. **Dimensión de fechas única**  
+   Se utiliza una única tabla de fechas (`dim_calendar`) reutilizada por todas las tablas de hechos mediante el campo `date_id`. No se crean dimensiones de fechas separadas por rol (pedido, pago, envío, etc.), simplificando el modelo.
+
+## 9. Consultas y Métricas Clave (DAX)
+
+A partir del modelo dimensional se definieron varias medidas en Power BI para responder a las necesidades de análisis del área comercial.
+
+
+
+### Total Ventas 
+Suma el monto total de pedidos con estado pagado/completado.
+
+```dax
+Total Ventas =
+CALCULATE(
+    SUM ( fact_sales_order[total_amount] ),
+    fact_sales_order[status] IN { "PAID", "FULFILLED" }
+)
+```
+---
+### Ticket Promedio
+Calcula el promedio de total_amount sobre las órdenes válidas.
+
+```dax
+Ticket Promedio =
+CALCULATE(
+    AVERAGE ( fact_sales_order[total_amount] ),
+    fact_sales_order[status] IN { "PAID", "FULFILLED" }
+)
+```
+---
+### Usuarios Activos (Web)
+Cuenta clientes únicos que tuvieron al menos una sesión web.
+
+```dax
+Usuarios Activos =
+DISTINCTCOUNT ( fact_web_session[customer_sk] )
+```
+---
+### NPS (Net Promoter Score)
+Calcula el índice NPS a partir de las respuestas de encuestas.
+
+```dax
+NPS =
+VAR TotalRespuestas =
+    COUNT ( fact_nps_response[score] )
+VAR Promotores =
+    CALCULATE (
+        COUNT ( fact_nps_response[score] ),
+        fact_nps_response[score] >= 9
+    )
+VAR Detractores =
+    CALCULATE (
+        COUNT ( fact_nps_response[score] ),
+        fact_nps_response[score] <= 6
+    )
+RETURN
+DIVIDE ( Promotores - Detractores, TotalRespuestas ) * 100
+```
